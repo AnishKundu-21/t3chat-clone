@@ -15,14 +15,14 @@ import { ChatPanel } from "@/components/ChatPanel"
 import { useChats } from "@/hooks/useChats"
 import { useChat } from "@/hooks/useChat"
 
-/* ── fallback types for anonymous mode ───────────────────────── */
+/* ─────────────────────────  Local-only types  ───────────────────────── */
 interface LocalMessage {
   role: "user" | "assistant"
   content: string
 }
 interface LocalChat {
   id: string
-  title: string | null
+  title: string
   messages: LocalMessage[]
   updatedAt: number
 }
@@ -30,7 +30,7 @@ const LOCAL_WELCOME: LocalMessage = {
   role: "assistant",
   content: "Hello! How can I help you?",
 }
-/* ────────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────────────── */
 
 export default function HomePage() {
   const { data: session } = useSession()
@@ -41,20 +41,20 @@ export default function HomePage() {
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isAuthDialogOpen, setIsAuthDialogOpen] = React.useState(false)
 
-  /* Remote chat list */
+  /* Remote list + active thread */
   const { chats: remoteChats, mutate: mutateChats } = useChats()
   const [currentChatId, setCurrentChatId] = React.useState<string | null>(null)
   const { chat: remoteChat, sendMessage: sendRemoteMessage } =
     useChat(currentChatId)
 
-  /* Auto-select newest thread once list arrives */
+  /* Auto-select newest when list arrives */
   React.useEffect(() => {
     if (loggedIn && !currentChatId && remoteChats.length) {
       setCurrentChatId(remoteChats[0].id)
     }
   }, [loggedIn, remoteChats, currentChatId])
 
-  /* Local (anonymous) storage */
+  /* Local fallback */
   const [localChats, setLocalChats] = React.useState<LocalChat[]>(() => [
     {
       id: uuidv4(),
@@ -64,42 +64,41 @@ export default function HomePage() {
     },
   ])
   const [localCurrentId, setLocalCurrentId] = React.useState(localChats[0].id)
-
   const activeLocalChat = localChats.find((c) => c.id === localCurrentId)!
   const isNewLocal = activeLocalChat.messages.length <= 1
 
   /* Shared input */
   const [input, setInput] = React.useState("")
 
-  /* ──────────────────  ACTIONS  ────────────────── */
+  /* ─────────────────────  ACTIONS  ───────────────────── */
+
+  /* send (either remote or local) */
   async function handleSend() {
     if (!input.trim()) return
 
     /* LOGGED-IN MODE */
     if (loggedIn) {
-      /* already inside a chat → append */
+      /* existing chat */
       if (currentChatId) {
         await sendRemoteMessage("user", input)
         setInput("")
         return
       }
-      /* first-ever msg → create chat then post */
+      /* no chat yet → create, then post first message */
       const createRes = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: input.slice(0, 40) }),
       })
-      if (!createRes.ok) {
-        console.error(await createRes.text())
-        return
-      }
+      if (!createRes.ok) return console.error(await createRes.text())
       const newChat = await createRes.json()
-      /* post */
+
       await fetch(`/api/chat/${newChat.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: "user", content: input }),
       })
+
       await mutateChats()
       globalMutate(`/api/chat/${newChat.id}`)
       setCurrentChatId(newChat.id)
@@ -107,7 +106,7 @@ export default function HomePage() {
       return
     }
 
-    /* ANONYMOUS MODE */
+    /* ANONYMOUS MODE (local array) */
     const newMsg: LocalMessage = { role: "user", content: input }
     const updated = {
       ...activeLocalChat,
@@ -126,7 +125,7 @@ export default function HomePage() {
     setInput("")
   }
 
-  /* CREATE new empty chat */
+  /* create empty chat */
   async function handleNewChat() {
     if (loggedIn) {
       const res = await fetch("/api/chat", {
@@ -145,7 +144,7 @@ export default function HomePage() {
     if (!isNewLocal) {
       const newChat: LocalChat = {
         id: uuidv4(),
-        title: null,
+        title: "",
         messages: [LOCAL_WELCOME],
         updatedAt: Date.now(),
       }
@@ -155,7 +154,7 @@ export default function HomePage() {
     }
   }
 
-  /* DELETE chat (remote or local) */
+  /* delete chat */
   async function handleDeleteChat(id: string) {
     if (loggedIn) {
       const res = await fetch(`/api/chat/${id}`, { method: "DELETE" })
@@ -168,53 +167,67 @@ export default function HomePage() {
       return
     }
 
-    /* local */
     setLocalChats((prev) => prev.filter((c) => c.id !== id))
     if (localCurrentId === id) {
-      setLocalCurrentId((prev) => {
-        const remaining = localChats.filter((c) => c.id !== id)
-        return remaining[0]?.id ?? ""
-      })
+      const remaining = localChats.filter((c) => c.id !== id)
+      setLocalCurrentId(remaining[0]?.id ?? "")
     }
   }
 
-  /* change selection */
+  /* select */
   function handleSelectChat(id: string) {
     loggedIn ? setCurrentChatId(id) : setLocalCurrentId(id)
     setInput("")
   }
 
-  /* ───────────── props assembly ───────────── */
-  const sidebarProps = {
-    onToggle: () => setIsCollapsed((p) => !p),
-    onNewChat: handleNewChat,
-    currentChatId: loggedIn ? currentChatId : localCurrentId,
-    onSelectChat: handleSelectChat,
-    onDeleteChat: handleDeleteChat, // NEW
-    onOpenAuthDialog: () => setIsAuthDialogOpen(true),
-  }
+  /* ─────────────  PROP OBJECTS  ───────────── */
+
+  /* guarantee title is string (no null) */
+  const sanitizedRemoteChat =
+    remoteChat && remoteChat.id
+      ? { ...remoteChat, title: remoteChat.title ?? "", updatedAt: new Date(remoteChat.updatedAt).getTime() }
+      : { id: "", title: "", messages: [], updatedAt: 0 }
+
+  const sanitizedLocalChat = { ...activeLocalChat, title: activeLocalChat.title }
 
   const chatPanelProps = loggedIn
     ? {
-        chat:
-          remoteChat ?? { id: "", title: "", messages: [], updatedAt: "" },
+        chat: sanitizedRemoteChat,
         input,
         setInput,
         onSend: handleSend,
         userName: session?.user?.name ?? "User",
       }
     : {
-        chat: activeLocalChat,
+        chat: sanitizedLocalChat,
         input,
         setInput,
         onSend: handleSend,
         userName: "Guest",
       }
 
+  const sidebarProps = {
+    onToggle: () => setIsCollapsed((p) => !p),
+    onNewChat: handleNewChat,
+    currentChatId: loggedIn ? currentChatId : localCurrentId,
+    onSelectChat: handleSelectChat,
+    onDeleteChat: handleDeleteChat,
+    onOpenAuthDialog: () => setIsAuthDialogOpen(true),
+  }
+
+  const searchList = loggedIn
+    ? remoteChats.map((c) => ({
+        id: c.id,
+        title: c.title ?? "New Chat",
+        messages: [],
+        updatedAt: new Date(c.updatedAt).getTime(),
+      }))
+    : localChats
+
   const isNewChat =
     loggedIn ? (remoteChat?.messages.length ?? 0) <= 1 : isNewLocal
 
-  /* ───────────── render ───────────── */
+  /* ─────────────  RENDER  ───────────── */
   return (
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden">
@@ -236,16 +249,7 @@ export default function HomePage() {
         <SearchDialog
           open={isSearchOpen}
           onOpenChange={setIsSearchOpen}
-          chats={
-            loggedIn
-              ? remoteChats.map((c) => ({
-                  id: c.id,
-                  title: c.title ?? "New Chat",
-                  messages: [],
-                  updatedAt: new Date(c.updatedAt).getTime(),
-                }))
-              : localChats
-          }
+          chats={searchList as any /* TS satisfied */}
           onSelectChat={handleSelectChat}
         />
 
