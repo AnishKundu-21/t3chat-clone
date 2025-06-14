@@ -1,31 +1,42 @@
 "use client";
 
 import * as React from "react";
+import { useSession, signOut } from "next-auth/react";
 import { ChatSession } from "@/types";
 import { cn } from "@/lib/utils";
 
-// UI Components
+// UI Components from shadcn/ui
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-// Icons
+// Icons from lucide-react
 import {
   PanelLeftClose,
   Plus,
   Search,
   Settings,
   Bot,
+  LogOut,
+  User as UserIcon,
 } from "lucide-react";
 
-// Define the props this component will accept
+// This interface defines all the props (data and functions)
+// that this component expects to receive from its parent (HomePage).
 interface SidebarProps {
   onToggle: () => void;
   onNewChat: () => void;
   chats: ChatSession[];
   currentChatId: string;
   onSelectChat: (chatId: string) => void;
+  onOpenAuthDialog: () => void;
 }
 
 export function Sidebar({
@@ -34,11 +45,15 @@ export function Sidebar({
   chats,
   currentChatId,
   onSelectChat,
+  onOpenAuthDialog,
 }: SidebarProps) {
-  // This component manages its own search term state
+  // Get the user's session data from the SessionProvider
+  const { data: session } = useSession();
+
+  // This state is managed internally by the Sidebar for its own search input
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  // It filters the chats prop based on its internal search term state
+  // This logic filters the chats based on the internal search term
   const filteredChats = chats.filter((chat) =>
     (chat.title || "New Chat")
       .toLowerCase()
@@ -64,10 +79,7 @@ export function Sidebar({
 
       {/* New Chat & Search */}
       <div className="flex flex-col gap-2">
-        <Button
-          onClick={onNewChat}
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-accent dark:hover:bg-accent/90 dark:text-accent-foreground"
-        >
+        <Button onClick={onNewChat} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-accent dark:hover:bg-accent/90 dark:text-accent-foreground">
           <Plus className="mr-2 h-4 w-4" />
           New Chat
         </Button>
@@ -104,21 +116,39 @@ export function Sidebar({
         )}
       </nav>
 
-      {/* Footer */}
+      {/* Auth-Aware Footer */}
       <div className="mt-auto">
         <Separator className="my-2 bg-border" />
         <div className="flex items-center p-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>AN</AvatarFallback>
-          </Avatar>
-          <div className="ml-3 flex-1">
-            <p className="text-sm font-semibold">Anish</p>
-            <p className="text-xs text-muted-foreground">Pro</p>
-          </div>
-          <Button variant="ghost" size="icon">
-            <Settings className="h-4 w-4" />
-          </Button>
+          {session ? (
+            // If user is logged in:
+            <>
+              <Avatar className="h-8 w-8">
+                {session.user?.image && <AvatarImage src={session.user.image} alt={session.user.name || 'User'} />}
+                <AvatarFallback>{session.user?.name?.charAt(0) || 'U'}</AvatarFallback>
+              </Avatar>
+              <div className="ml-3 flex-1">
+                <p className="text-sm font-semibold">{session.user?.name}</p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon"><Settings className="h-4 w-4" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            // If user is logged out:
+            <Button onClick={onOpenAuthDialog} className="w-full">
+              <UserIcon className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
+          )}
         </div>
       </div>
     </div>
