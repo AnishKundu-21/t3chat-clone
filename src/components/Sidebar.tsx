@@ -1,10 +1,16 @@
 "use client";
 
-import * as React from "react"; // Import React to use its hooks
+import * as React from "react";
+import { ChatSession } from "@/types";
+import { cn } from "@/lib/utils";
+
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+
+// Icons
 import {
   PanelLeftClose,
   Plus,
@@ -12,20 +18,8 @@ import {
   Settings,
   Bot,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
-// --- Types ---
-interface Message {
-  role: "user" | "assistant";
-  content: string;
-}
-interface ChatSession {
-  id: string;
-  title: string;
-  messages: Message[];
-  updatedAt: number;
-}
-
+// Define the props this component will accept
 interface SidebarProps {
   onToggle: () => void;
   onNewChat: () => void;
@@ -41,10 +35,10 @@ export function Sidebar({
   currentChatId,
   onSelectChat,
 }: SidebarProps) {
-  // --- THE KEY CHANGE #1: State for the search term ---
+  // This component manages its own search term state
   const [searchTerm, setSearchTerm] = React.useState("");
 
-  // --- THE KEY CHANGE #2: Filter chats based on the search term ---
+  // It filters the chats prop based on its internal search term state
   const filteredChats = chats.filter((chat) =>
     (chat.title || "New Chat")
       .toLowerCase()
@@ -79,7 +73,6 @@ export function Sidebar({
         </Button>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          {/* THE KEY CHANGE #3: Connect the input to the state */}
           <Input
             placeholder="Search your threads..."
             value={searchTerm}
@@ -89,9 +82,8 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Chat History */}
+      {/* Chat History List */}
       <nav className="mt-4 flex-1 space-y-1 overflow-y-auto px-2">
-        {/* THE KEY CHANGE #4: Render the filtered list */}
         {filteredChats.map((chat) => (
           <Button
             key={chat.id}
@@ -105,7 +97,6 @@ export function Sidebar({
             {chat.title || "New Chat"}
           </Button>
         ))}
-        {/* THE KEY CHANGE #5: Show a message if no results are found */}
         {filteredChats.length === 0 && searchTerm && (
           <p className="text-center text-sm text-muted-foreground mt-4">
             No chats found.
@@ -117,9 +108,17 @@ export function Sidebar({
       <div className="mt-auto">
         <Separator className="my-2 bg-border" />
         <div className="flex items-center p-2">
-          <Avatar className="h-8 w-8"><AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" /><AvatarFallback>AN</AvatarFallback></Avatar>
-          <div className="ml-3 flex-1"><p className="text-sm font-semibold">Anish</p><p className="text-xs text-muted-foreground">Pro</p></div>
-          <Button variant="ghost" size="icon"><Settings className="h-4 w-4" /></Button>
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>AN</AvatarFallback>
+          </Avatar>
+          <div className="ml-3 flex-1">
+            <p className="text-sm font-semibold">Anish</p>
+            <p className="text-xs text-muted-foreground">Pro</p>
+          </div>
+          <Button variant="ghost" size="icon">
+            <Settings className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
