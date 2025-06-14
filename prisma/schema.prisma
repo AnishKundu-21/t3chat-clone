@@ -1,22 +1,23 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// =============================================================
+// PRISMA SCHEMA  – MongoDB
+// =============================================================
+// 1.  Existing Next-Auth models remain untouched.
+// 2.  New Chat + ChatMessage models are added.
+// 3.  Relations & indexes ensure fast per-user look-ups.
+// =============================================================
 
 generator client {
   provider = "prisma-client-js"
 }
 
-// This tells Prisma to connect to a MongoDB database.
-// The connection URL is loaded from the .env file.
 datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
-// =========================================
-// AUTH.JS MODELS FOR NEXT-AUTH
-// These are the standard models required by the Prisma adapter.
-// =========================================
-
+// -------------------------------------------------------------
+//  NEXT-AUTH STANDARD MODELS  (unchanged)
+// -------------------------------------------------------------
 model Account {
   id                String  @id @default(auto()) @map("_id") @db.ObjectId
   userId            String  @db.ObjectId
@@ -52,18 +53,49 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// =========================================
-// USER MODEL
-// We add our custom `hashedPassword` field here for email/password login.
-// =========================================
-
+// -------------------------------------------------------------
+//  USER  (+ relation to Chat)
+// -------------------------------------------------------------
 model User {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  hashedPassword String?  // Our custom field for credentials login
-  accounts      Account[]
-  sessions      Session[]
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  name           String?
+  email          String?       @unique
+  emailVerified  DateTime?
+  image          String?
+  hashedPassword String?
+
+  accounts Account[]
+  sessions Session[]
+  chats    Chat[]              // <— NEW  one-to-many
+}
+
+// -------------------------------------------------------------
+//  CHAT  – one per conversation / thread
+// -------------------------------------------------------------
+model Chat {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String         @db.ObjectId
+  title     String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  messages  ChatMessage[]  // one-to-many
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// -------------------------------------------------------------
+//  CHAT MESSAGE  – individual turns inside a Chat
+// -------------------------------------------------------------
+model ChatMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chatId    String   @db.ObjectId
+  role      String   // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
 }
