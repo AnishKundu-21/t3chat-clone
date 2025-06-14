@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 interface SidebarProps {
-  onToggle: () => void; // A function to call when the collapse button is clicked
+  onToggle: () => void;
 }
 
 const chatHistory = {
@@ -23,10 +23,12 @@ const chatHistory = {
 
 export function Sidebar({ onToggle }: SidebarProps) {
   return (
-    <div className="flex h-screen w-72 flex-col bg-[#191921] p-2">
+    // THE KEY: Use theme-aware background colors
+    <div className="flex h-screen w-72 flex-col bg-muted/20 dark:bg-[#191921] p-2">
       {/* Header */}
       <div className="flex items-center justify-between p-2">
         <div className="flex items-center gap-2">
+          {/* Bot icon bg is accent, which works on both themes */}
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
             <Bot className="h-5 w-5 text-accent-foreground" />
           </div>
@@ -37,19 +39,21 @@ export function Sidebar({ onToggle }: SidebarProps) {
         </Button>
       </div>
 
-      <Separator className="my-2 bg-border/50" />
+      <Separator className="my-2 bg-border" />
 
       {/* New Chat & Search */}
       <div className="flex flex-col gap-2">
-        <Button variant="default" className="bg-accent hover:bg-accent/90 w-full">
+        {/* THE KEY: Use different button styles for light vs dark */}
+        <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-accent dark:hover:bg-accent/90 dark:text-accent-foreground">
           <Plus className="mr-2 h-4 w-4" />
           New Chat
         </Button>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          {/* THE KEY: Use theme-aware background and ring for the input */}
           <Input
             placeholder="Search your threads..."
-            className="w-full rounded-lg border-0 bg-background/50 pl-9 focus-visible:ring-1 focus-visible:ring-accent"
+            className="w-full rounded-lg border-0 bg-background/50 pl-9 focus-visible:ring-1 focus-visible:ring-ring"
           />
         </div>
       </div>
@@ -63,6 +67,7 @@ export function Sidebar({ onToggle }: SidebarProps) {
             </h2>
             <div className="mt-2 space-y-1">
               {chats.map((chat) => (
+                // Ghost buttons are automatically theme-aware
                 <Button
                   key={chat}
                   variant="ghost"
@@ -78,7 +83,7 @@ export function Sidebar({ onToggle }: SidebarProps) {
 
       {/* Footer */}
       <div className="mt-auto">
-        <Separator className="my-2 bg-border/50" />
+        <Separator className="my-2 bg-border" />
         <div className="flex items-center p-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
