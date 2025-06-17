@@ -13,49 +13,54 @@ export const {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-      // The name to display on the sign in form (e.g. 'Sign in with...')
       name: "Email and Password",
-      // The credentials is used to generate a suitable form on the sign in page.
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "test@example.com" },
+        email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // This is where you provide the logic to find the user in your database.
-        
-        // Add logic here to look up the user from the credentials supplied
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
         });
 
-        if (!user || !user.hashedPassword) {
-          // No user was found, or they signed up with a social provider.
-          return null;
-        }
+        if (!user?.hashedPassword) return null;
 
-        // Use bcrypt to compare the provided password with the stored hashed password.
-        const passwordsMatch = await bcrypt.compare(
+        const validPassword = await bcrypt.compare(
           credentials.password as string,
           user.hashedPassword
         );
 
-        if (passwordsMatch) {
-          // Any object returned will be saved in `user` property of the JWT
-          return user;
-        } else {
-          // If you return null then an error will be displayed advising the user to check their details.
-          return null;
-        }
+        return validPassword ? user : null;
       },
     }),
   ],
   session: {
-    // Use JSON Web Tokens for session management
     strategy: "jwt",
+  },
+  cookies: {
+    sessionToken: {
+      name: "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production", // ← crucial line
+      },
+    },
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) token.sub = user.id;
+      return token;
+    },
+    async session({ session, token }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
   },
   secret: process.env.AUTH_SECRET,
 });

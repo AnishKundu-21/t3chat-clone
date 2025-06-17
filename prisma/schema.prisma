@@ -1,11 +1,6 @@
 // =============================================================
 // PRISMA SCHEMA  – MongoDB
 // =============================================================
-// 1.  Existing Next-Auth models remain untouched.
-// 2.  New Chat + ChatMessage models are added.
-// 3.  Relations & indexes ensure fast per-user look-ups.
-// =============================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -54,31 +49,45 @@ model VerificationToken {
 }
 
 // -------------------------------------------------------------
-//  USER  (+ relation to Chat)
+//  USER  (+ relation to Chat & UserPreference)
 // -------------------------------------------------------------
 model User {
-  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
   name           String?
-  email          String?       @unique
+  email          String?          @unique
   emailVerified  DateTime?
   image          String?
   hashedPassword String?
 
-  accounts Account[]
-  sessions Session[]
-  chats    Chat[]              // <— NEW  one-to-many
+  accounts      Account[]
+  sessions      Session[]
+  chats         Chat[]
+  preference    UserPreference?    // <— NEW one-to-one relation
+}
+
+// -------------------------------------------------------------
+//  USER PREFERENCE – for storing user settings as JSON
+// -------------------------------------------------------------
+model UserPreference {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // -------------------------------------------------------------
 //  CHAT  – one per conversation / thread
 // -------------------------------------------------------------
 model Chat {
-  id        String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String         @db.ObjectId
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String        @db.ObjectId
   title     String?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-  messages  ChatMessage[]  // one-to-many
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[] // one-to-many
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import { useChats } from "@/hooks/useChats";
 import { cn } from "@/lib/utils";
 
-/* ── shadcn/ui primitives ─────────────────────────────── */
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,19 +22,15 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-/* ── Icons ─────────────────────────────────────────────── */
 import {
   PanelLeftClose,
   Plus,
   Search,
-  Settings,
   Bot,
-  LogOut,
-  User as UserIcon,
   Trash2,
+  User as UserIcon,
 } from "lucide-react";
 
-/* ── Props ─────────────────────────────────────────────── */
 interface SidebarProps {
   onToggle: () => void;
   onNewChat: () => void;
@@ -53,15 +49,15 @@ export function Sidebar({
   onOpenAuthDialog,
 }: SidebarProps) {
   const { data: session } = useSession();
-  const { chats, isLoading } = useChats();
+  const router = useRouter();
 
+  const { chats, isLoading } = useChats();
   const [searchTerm, setSearchTerm] = React.useState("");
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(
     null
   );
 
-  /* ── helpers ────────────────────────── */
   function confirmDelete(id: string) {
     setPendingDeleteId(id);
     setDialogOpen(true);
@@ -72,16 +68,12 @@ export function Sidebar({
     setPendingDeleteId(null);
   }
 
-  /* filter list */
   const filtered = chats.filter((c) =>
-    (c.title || "New Chat")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    (c.title || "New Chat").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <>
-      {/* ─────────────  MAIN SIDEBAR  ───────────── */}
       <div className="flex h-screen w-72 flex-col bg-muted/20 dark:bg-[#191921] p-2">
         {/* Header */}
         <div className="flex items-center justify-between p-2">
@@ -98,7 +90,7 @@ export function Sidebar({
 
         <Separator className="my-2" />
 
-        {/* New chat + search */}
+        {/* New + Search */}
         <div className="flex flex-col gap-2">
           <Button onClick={onNewChat} className="w-full">
             <Plus className="mr-2 h-4 w-4" />
@@ -136,8 +128,6 @@ export function Sidebar({
               >
                 {chat.title || "New Chat"}
               </Button>
-
-              {/* Trash icon appears on hover */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -151,7 +141,7 @@ export function Sidebar({
           ))}
 
           {!isLoading && filtered.length === 0 && (
-            <p className="text-center text-sm text-muted-foreground mt-4">
+            <p className="mt-4 text-center text-sm text-muted-foreground">
               No chats found.
             </p>
           )}
@@ -161,20 +151,23 @@ export function Sidebar({
         <Separator className="my-2" />
         <div className="flex items-center p-2">
           {session ? (
-            <>
+            <Button
+              variant="ghost"
+              className="flex w-full items-center gap-3 justify-start text-left"
+              onClick={() => router.push("/settings")}
+            >
               <Avatar className="h-8 w-8">
-                {session.user?.image && <AvatarImage src={session.user.image} />}
+                {session.user?.image && (
+                  <AvatarImage src={session.user.image} />
+                )}
                 <AvatarFallback>
                   {session.user?.name?.charAt(0) ?? "U"}
                 </AvatarFallback>
               </Avatar>
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-semibold">{session.user?.name}</p>
-              </div>
-              <Button variant="ghost" size="icon" onClick={() => signOut()}>
-                <Settings className="h-4 w-4" />
-              </Button>
-            </>
+              <p className="text-sm font-semibold">
+                {session.user?.name ?? "User"}
+              </p>
+            </Button>
           ) : (
             <Button onClick={onOpenAuthDialog} className="w-full">
               <UserIcon className="mr-2 h-4 w-4" />
@@ -184,7 +177,7 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* ───────────  CONFIRM ALERT  ─────────── */}
+      {/* Confirm delete dialog */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
