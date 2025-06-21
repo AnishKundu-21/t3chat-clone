@@ -1,29 +1,31 @@
-import { ReactNode } from "react"
-import { redirect } from "next/navigation"
+import {ReactNode} from "react";
+import {redirect} from "next/navigation";
 
-import { getServerAuthSession } from "@/lib/auth"   // ← use the helper you already have
+import {getServerAuthSession} from "@/lib/auth";
+import SettingsHeader from "@/components/settings/SettingsHeader";
+import SettingsTabs from "@/components/settings/SettingsTabs";
+import SettingsSidebar from "@/components/settings/SettingsSidebar";
 
-import SettingsHeader from "@/components/settings/SettingsHeader"
-import SettingsTabs   from "@/components/settings/SettingsTabs"
-
-export const metadata = { title: "Settings • T3 Chat" }
+export const metadata = {title: "Settings • T3 Chat"};
 
 interface LayoutProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-export default async function SettingsLayout({ children }: LayoutProps) {
-  /* server-side auth guard */
-  const session = await getServerAuthSession()  // ← call helper
-  if (!session) redirect("/")
+export default async function SettingsLayout({children}: LayoutProps) {
+  const session = await getServerAuthSession();
+  if (!session) redirect("/");
 
   return (
     <div className="min-h-screen bg-background text-foreground dark:bg-[#111111]">
-      <SettingsHeader />
-      <SettingsTabs />
-      <main className="mx-auto max-w-7xl p-4 md:p-8">
-        {children}
-      </main>
+      <SettingsHeader/>
+      <div className="flex">
+        <SettingsSidebar/>
+        <div className="flex-1">
+          <SettingsTabs/>
+          <main className="px-8 pb-8">{children}</main>
+        </div>
+      </div>
     </div>
-  )
+  );
 }

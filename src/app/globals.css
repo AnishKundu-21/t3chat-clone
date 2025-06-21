@@ -1,132 +1,111 @@
 /* ────────────────────────────────────────────────────────────────
    Tailwind layers
    ────────────────────────────────────────────────────────────────*/
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   
-   /* ────────────────────────────────────────────────────────────────
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ────────────────────────────────────────────────────────────────
       1. THEME TOKENS
       ────────────────────────────────────────────────────────────────*/
-   @layer base {
-     /* LIGHT THEME */
-     :root {
-       --background: 0 0% 100%;
-       --foreground: 222.2 84% 4.9%;
-   
-       --card: 0 0% 100%;
-       --card-foreground: 222.2 84% 4.9%;
-   
-       --popover: 0 0% 100%;
-       --popover-foreground: 222.2 84% 4.9%;
-   
-       --primary: 222.2 47.4% 11.2%;
-       --primary-foreground: 210 40% 98%;
-   
-       --secondary: 210 40% 96.1%;
-       --secondary-foreground: 222.2 47.4% 11.2%;
-   
-       --muted: 210 40% 96.1%;
-       --muted-foreground: 215.4 16.3% 46.9%;
-   
-       --accent: 262.1 83.3% 57.8%;
-       --accent-foreground: 210 40% 98%;
-   
-       --destructive: 0 84.2% 60.2%;
-       --destructive-foreground: 210 40% 98%;
-   
-       --border: 214.3 31.8% 91.4%;
-       --input: 214.3 31.8% 91.4%;
-   
-       --ring: 222.2 84% 4.9%;
-       --radius: 0.75rem;
-     }
-   
-     /* DARK THEME */
-     .dark {
-       --background: 240 10% 3.9%;
-       --foreground: 210 40% 98%;
-   
-       --card: 240 10% 3.9%;
-       --card-foreground: 210 40% 98%;
-   
-       --popover: 240 10% 3.9%;
-       --popover-foreground: 210 40% 98%;
-   
-       --primary: 210 40% 98%;
-       --primary-foreground: 222.2 47.4% 11.2%;
-   
-       --secondary: 240 3.7% 15.9%;
-       --secondary-foreground: 210 40% 98%;
-   
-       --muted: 240 3.7% 15.9%;
-       --muted-foreground: 240 5% 64.9%;
-   
-       --accent: 262.1 83.3% 57.8%;
-       --accent-foreground: 210 40% 98%;
-   
-       --destructive: 0 62.8% 30.6%;
-       --destructive-foreground: 210 40% 98%;
-   
-       --border: 240 3.7% 15.9%;
-       --input: 240 3.7% 15.9%;
-   
-       --ring: 240 4.9% 83.9%;
-     }
-   }
-   
-   /* ────────────────────────────────────────────────────────────────
-      2. GLOBAL ELEMENT RESETS & WINDOWS-AERO BACKGROUND
+@layer base {
+  /* LIGHT THEME */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 262.1 83.3% 57.8%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.75rem;
+  }
+
+  /* DARK THEME */
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 210 40% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 262.1 83.3% 57.8%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
+      2. GLOBAL ELEMENT RESETS & CUSTOM BACKGROUND
       ────────────────────────────────────────────────────────────────*/
-   @layer base {
-     * {
-       @apply border-border;
-     }
-   
-     body {
-       @apply min-h-screen text-foreground antialiased;
-       /* Windows-Aero wallpaper */
-       background:
-         radial-gradient(circle at 20% 30%, rgb(0 153 255 / 0.35) 0%, rgb(0 153 255 / 0) 40%),
-         radial-gradient(circle at 80% 70%, rgb(0 255 255 / 0.35) 0%, rgb(0 255 255 / 0) 45%),
-         hsl(var(--background));
-     }
-   
-     /* Dark mode gets a deeper base + softer glows */
-     .dark body {
-       background:
-         radial-gradient(circle at 20% 30%, rgb(0 153 255 / 0.15) 0%, rgb(0 153 255 / 0) 40%),
-         radial-gradient(circle at 80% 70%, rgb(0 255 255 / 0.15) 0%, rgb(0 255 255 / 0) 45%),
-         linear-gradient(135deg, #1e1e2d 0%, #14141d 100%);
-     }
-   }
-   
-   /* ────────────────────────────────────────────────────────────────
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply min-h-screen text-foreground antialiased;
+    /* Windows-Aero wallpaper */
+    background: radial-gradient(circle at 20% 30%, rgb(0 153 255 / 0.35) 0%, rgb(0 153 255 / 0) 40%),
+      radial-gradient(circle at 80% 70%, rgb(0 255 255 / 0.35) 0%, rgb(0 255 255 / 0) 45%),
+      hsl(var(--background));
+  }
+
+  /* Dark mode gets a deeper base + softer glows */
+  .dark body {
+    background: radial-gradient(circle at 20% 30%, rgb(0 153 255 / 0.15) 0%, rgb(0 153 255 / 0) 40%),
+      radial-gradient(circle at 80% 70%, rgb(0 255 255 / 0.15) 0%, rgb(0 255 255 / 0) 45%),
+      linear-gradient(135deg, #1e1e2d 0%, #14141d 100%);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
       3. “GLASS” UTILITY  (add className="glass" where needed)
       ────────────────────────────────────────────────────────────────*/
-   @layer components {
-     .glass {
-       @apply bg-white/15 rounded-2xl border border-white/20
-              backdrop-blur-2xl backdrop-saturate-150 shadow-xl;
-   
-       /* Subtle blue glow when focused */
-       &:focus-within {
-         box-shadow: 0 0 0 3px rgb(0 153 255 / 0.5);
-       }
-     }
-   }
-   
-   /* ────────────────────────────────────────────────────────────────
+@layer components {
+  .glass {
+    @apply bg-white/15 rounded-2xl border border-white/20
+    backdrop-blur-2xl backdrop-saturate-150 shadow-xl;
+
+    /* Subtle blue glow when focused */
+    &:focus-within {
+      box-shadow: 0 0 0 3px rgb(0 153 255 / 0.5);
+    }
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
       4. CUSTOM SCROLLBAR (optional)
       ────────────────────────────────────────────────────────────────*/
-   ::-webkit-scrollbar {
-     width: 8px;
-   }
-   ::-webkit-scrollbar-thumb {
-     background: rgba(255 255 255 / 0.2);
-     border-radius: 4px;
-   }
-   ::-webkit-scrollbar-thumb:hover {
-     background: rgba(255 255 255 / 0.35);
-   }
-   
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255 255 255 / 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255 255 255 / 0.35);
+}
