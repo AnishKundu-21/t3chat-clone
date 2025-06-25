@@ -1,45 +1,46 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+// src/app/api/register/route.ts
+import { NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
+import { prisma } from "@/lib/prisma"          // <- your Prisma client
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { email, name, password } = body;
+    const { name, email, password } = await request.json()
 
-    // --- Basic Input Validation ---
-    if (!email || !name || !password) {
-      return new NextResponse("Missing name, email, or password", { status: 400 });
+    /* basic validation */
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      )
     }
 
-    // --- Check if user already exists ---
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email },
-    });
-
-    if (existingUser) {
-      return new NextResponse("User with this email already exists", { status: 409 }); // 409 Conflict
+    /* email already in use? */
+    const existing = await prisma.user.findUnique({ where: { email } })
+    if (existing) {
+      return NextResponse.json(
+        { error: "Email is already registered" },
+        { status: 409 },
+      )
     }
 
-    // --- Hash the password ---
-    const hashedPassword = await bcrypt.hash(password, 12);
+    /* hash password & save */
+    const hashed = await bcrypt.hash(password, 12)
 
-    // --- Create the user in the database ---
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
-        email,
         name,
-        hashedPassword,
+        email,
+        hashedPassword: hashed,
       },
-    });
+    })
 
-    // --- Return the created user (without the password) ---
-    return NextResponse.json(user);
-
-  } catch (error: any) {
-    console.error("REGISTRATION_ERROR", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return NextResponse.json({ ok: true }, { status: 201 })
+  } catch (err) {
+    console.error("[REGISTER]", err)
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    )
   }
 }

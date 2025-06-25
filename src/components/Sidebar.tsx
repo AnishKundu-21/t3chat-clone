@@ -37,7 +37,6 @@ interface SidebarProps {
   currentChatId: string | null
   onSelectChat: (chatId: string) => void
   onDeleteChat: (chatId: string) => void
-  onOpenAuthDialog: () => void
 }
 
 export function Sidebar({
@@ -46,7 +45,6 @@ export function Sidebar({
   currentChatId,
   onSelectChat,
   onDeleteChat,
-  onOpenAuthDialog,
 }: SidebarProps) {
   const { data: session } = useSession()
   const router = useRouter()
@@ -54,9 +52,8 @@ export function Sidebar({
   const { chats, isLoading } = useChats()
   const [searchTerm, setSearchTerm] = React.useState("")
   const [dialogOpen, setDialogOpen] = React.useState(false)
-  const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(
-    null,
-  )
+  const [pendingDeleteId, setPendingDeleteId] =
+    React.useState<string | null>(null)
 
   function confirmDelete(id: string) {
     setPendingDeleteId(id)
@@ -74,9 +71,8 @@ export function Sidebar({
 
   return (
     <>
-      {/* ───────── SIDEBAR WRAPPER ───────── */}
       <div className="flex h-screen w-72 flex-col bg-sidebar border-r border-sidebar-border p-2">
-        {/* Header */}
+        {/* ───── Header ───── */}
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
@@ -91,7 +87,7 @@ export function Sidebar({
 
         <Separator className="my-2" />
 
-        {/* New + Search */}
+        {/* ───── New + Search ───── */}
         <div className="flex flex-col gap-2">
           <Button onClick={onNewChat} className="w-full">
             <Plus className="mr-2 h-4 w-4" />
@@ -108,7 +104,7 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Chat list */}
+        {/* ───── Chat list ───── */}
         <nav className="mt-4 flex-1 space-y-1 overflow-y-auto px-2">
           {isLoading && (
             <p className="text-sm text-muted-foreground">Loading…</p>
@@ -148,7 +144,7 @@ export function Sidebar({
           )}
         </nav>
 
-        {/* Footer */}
+        {/* ───── Footer ───── */}
         <Separator className="my-2" />
         <div className="flex items-center p-2">
           {session ? (
@@ -170,7 +166,10 @@ export function Sidebar({
               </p>
             </Button>
           ) : (
-            <Button onClick={onOpenAuthDialog} className="w-full">
+            <Button
+              onClick={() => router.push("/login")}
+              className="w-full"
+            >
               <UserIcon className="mr-2 h-4 w-4" />
               Sign In
             </Button>
@@ -178,7 +177,7 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Confirm delete dialog */}
+      {/* ───── Confirm delete dialog ───── */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
