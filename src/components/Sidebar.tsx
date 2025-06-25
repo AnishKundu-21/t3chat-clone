@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import * as React from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
-import { useChats } from "@/hooks/useChats";
-import { cn } from "@/lib/utils";
+import { useChats } from "@/hooks/useChats"
+import { cn } from "@/lib/utils"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Separator } from "@/components/ui/separator"
 import {
   AlertDialog,
   AlertDialogContent,
@@ -20,7 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog"
 
 import {
   PanelLeftClose,
@@ -29,15 +29,15 @@ import {
   Bot,
   Trash2,
   User as UserIcon,
-} from "lucide-react";
+} from "lucide-react"
 
 interface SidebarProps {
-  onToggle: () => void;
-  onNewChat: () => void;
-  currentChatId: string | null;
-  onSelectChat: (chatId: string) => void;
-  onDeleteChat: (chatId: string) => void;
-  onOpenAuthDialog: () => void;
+  onToggle: () => void
+  onNewChat: () => void
+  currentChatId: string | null
+  onSelectChat: (chatId: string) => void
+  onDeleteChat: (chatId: string) => void
+  onOpenAuthDialog: () => void
 }
 
 export function Sidebar({
@@ -48,33 +48,34 @@ export function Sidebar({
   onDeleteChat,
   onOpenAuthDialog,
 }: SidebarProps) {
-  const { data: session } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession()
+  const router = useRouter()
 
-  const { chats, isLoading } = useChats();
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const { chats, isLoading } = useChats()
+  const [searchTerm, setSearchTerm] = React.useState("")
+  const [dialogOpen, setDialogOpen] = React.useState(false)
   const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(
-    null
-  );
+    null,
+  )
 
   function confirmDelete(id: string) {
-    setPendingDeleteId(id);
-    setDialogOpen(true);
+    setPendingDeleteId(id)
+    setDialogOpen(true)
   }
   function handleConfirm() {
-    if (pendingDeleteId) onDeleteChat(pendingDeleteId);
-    setDialogOpen(false);
-    setPendingDeleteId(null);
+    if (pendingDeleteId) onDeleteChat(pendingDeleteId)
+    setDialogOpen(false)
+    setPendingDeleteId(null)
   }
 
   const filtered = chats.filter((c) =>
-    (c.title || "New Chat").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    (c.title || "New Chat").toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   return (
     <>
-      <div className="flex h-screen w-72 flex-col bg-muted/20 dark:bg-[#191921] p-2">
+      {/* ───────── SIDEBAR WRAPPER ───────── */}
+      <div className="flex h-screen w-72 flex-col bg-sidebar border-r border-sidebar-border p-2">
         {/* Header */}
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-2">
@@ -123,7 +124,7 @@ export function Sidebar({
                 onClick={() => onSelectChat(chat.id)}
                 className={cn(
                   "flex-1 justify-start truncate",
-                  chat.id === currentChatId && "font-semibold"
+                  chat.id === currentChatId && "font-semibold",
                 )}
               >
                 {chat.title || "New Chat"}
@@ -153,7 +154,7 @@ export function Sidebar({
           {session ? (
             <Button
               variant="ghost"
-              className="flex w-full items-center gap-3 justify-start text-left"
+              className="flex w-full items-center justify-start gap-3 text-left"
               onClick={() => router.push("/settings")}
             >
               <Avatar className="h-8 w-8">
@@ -199,5 +200,5 @@ export function Sidebar({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }
