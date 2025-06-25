@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 
 /**
- * ThemeToggle – toggles between “light” and “dark”.
- * Requires <ThemeProvider> (from next-themes) higher in the tree.
+ * Toggles between "light" and "dark".
+ * Requires <ThemeProvider> higher in the tree.
  */
-export default function ThemeToggle() {
+export default function ToggleTheme() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -17,7 +17,7 @@ export default function ThemeToggle() {
   useEffect(() => setMounted(true), []);
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" disabled>
+      <Button variant="ghost" size="icon" disabled title="Loading theme">
         <Sun className="h-5 w-5 animate-spin" />
       </Button>
     );
