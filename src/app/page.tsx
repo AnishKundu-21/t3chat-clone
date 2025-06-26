@@ -1,3 +1,4 @@
+/* ───────────────────────── src/app/page.tsx ───────────────────────── */
 "use client"
 
 import * as React from "react"
@@ -15,7 +16,7 @@ import { ChatPanel } from "@/components/ChatPanel"
 import { useChats } from "@/hooks/useChats"
 import { useChat } from "@/hooks/useChat"
 
-/* ─────────────────────────  Local-only types  ───────────────────────── */
+/* ─────────────────────────  Local-only types  ─────────────────────── */
 interface LocalMessage {
   role: "user" | "assistant"
   content: string
@@ -30,31 +31,33 @@ const LOCAL_WELCOME: LocalMessage = {
   role: "assistant",
   content: "Hello! How can I help you?",
 }
-/* ─────────────────────────────────────────────────────────────────────── */
+/* ───────────────────────────────────────────────────────────────────── */
 
 export default function HomePage() {
   const { data: session } = useSession()
   const loggedIn = !!session
 
-  /* UI state */
-  const [isCollapsed, setIsCollapsed] = React.useState(false)
+  /* UI state --------------------------------------------------------- */
+  const [isCollapsed, setIsCollapsed] = React.useState(false) // sidebar closed?
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isAuthDialogOpen, setIsAuthDialogOpen] = React.useState(false)
 
-  /* Remote list + active thread */
+  /* Remote list + active thread -------------------------------------- */
   const { chats: remoteChats, mutate: mutateChats } = useChats()
-  const [currentChatId, setCurrentChatId] = React.useState<string | null>(null)
+  const [currentChatId, setCurrentChatId] = React.useState<string | null>(
+    null,
+  )
   const { chat: remoteChat, sendMessage: sendRemoteMessage } =
     useChat(currentChatId)
 
-  /* Auto-select newest when list arrives */
+  /* Auto-select newest when list arrives ----------------------------- */
   React.useEffect(() => {
     if (loggedIn && !currentChatId && remoteChats.length) {
       setCurrentChatId(remoteChats[0].id)
     }
   }, [loggedIn, remoteChats, currentChatId])
 
-  /* Local fallback */
+  /* Local fallback --------------------------------------------------- */
   const [localChats, setLocalChats] = React.useState<LocalChat[]>(() => [
     {
       id: uuidv4(),
@@ -67,7 +70,7 @@ export default function HomePage() {
   const activeLocalChat = localChats.find((c) => c.id === localCurrentId)!
   const isNewLocal = activeLocalChat.messages.length <= 1
 
-  /* Shared input */
+  /* Shared input ----------------------------------------------------- */
   const [input, setInput] = React.useState("")
 
   /* ─────────────────────  ACTIONS  ───────────────────── */
@@ -90,7 +93,10 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: input.slice(0, 40) }),
       })
-      if (!createRes.ok) return console.error(await createRes.text())
+      if (!createRes.ok) {
+        console.error(await createRes.text())
+        return
+      }
       const newChat = await createRes.json()
 
       await fetch(`/api/chat/${newChat.id}`, {
@@ -108,7 +114,7 @@ export default function HomePage() {
 
     /* ANONYMOUS MODE (local array) */
     const newMsg: LocalMessage = { role: "user", content: input }
-    const updated = {
+    const updated: LocalChat = {
       ...activeLocalChat,
       messages: [...activeLocalChat.messages, newMsg],
       updatedAt: Date.now(),
@@ -119,8 +125,8 @@ export default function HomePage() {
     }
     setLocalChats((prev) =>
       [updated, ...prev.filter((c) => c.id !== updated.id)].sort(
-        (a, b) => b.updatedAt - a.updatedAt
-      )
+        (a, b) => b.updatedAt - a.updatedAt,
+      ),
     )
     setInput("")
   }
@@ -133,7 +139,10 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: "{}",
       })
-      if (!res.ok) return console.error(await res.text())
+      if (!res.ok) {
+        console.error(await res.text())
+        return
+      }
       const chat = await res.json()
       await mutateChats()
       setCurrentChatId(chat.id)
@@ -158,7 +167,10 @@ export default function HomePage() {
   async function handleDeleteChat(id: string) {
     if (loggedIn) {
       const res = await fetch(`/api/chat/${id}`, { method: "DELETE" })
-      if (!res.ok) return console.error(await res.text())
+      if (!res.ok) {
+        console.error(await res.text())
+        return
+      }
       await mutateChats()
       if (currentChatId === id) {
         const newest = remoteChats.filter((c) => c.id !== id)[0]
@@ -182,13 +194,19 @@ export default function HomePage() {
 
   /* ─────────────  PROP OBJECTS  ───────────── */
 
-  /* guarantee title is string (no null) */
   const sanitizedRemoteChat =
     remoteChat && remoteChat.id
-      ? { ...remoteChat, title: remoteChat.title ?? "", updatedAt: new Date(remoteChat.updatedAt).getTime() }
+      ? {
+          ...remoteChat,
+          title: remoteChat.title ?? "",
+          updatedAt: new Date(remoteChat.updatedAt).getTime(),
+        }
       : { id: "", title: "", messages: [], updatedAt: 0 }
 
-  const sanitizedLocalChat = { ...activeLocalChat, title: activeLocalChat.title }
+  const sanitizedLocalChat = {
+    ...activeLocalChat,
+    title: activeLocalChat.title,
+  }
 
   const chatPanelProps = loggedIn
     ? {
@@ -212,7 +230,6 @@ export default function HomePage() {
     currentChatId: loggedIn ? currentChatId : localCurrentId,
     onSelectChat: handleSelectChat,
     onDeleteChat: handleDeleteChat,
-    onOpenAuthDialog: () => setIsAuthDialogOpen(true),
   }
 
   const searchList = loggedIn
@@ -228,24 +245,29 @@ export default function HomePage() {
     loggedIn ? (remoteChat?.messages.length ?? 0) <= 1 : isNewLocal
 
   /* ─────────────  RENDER  ───────────── */
+  const sidebarOpen = !isCollapsed
+
   return (
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden">
-        {isCollapsed ? (
-          <FloatingButtons
-            onToggle={() => setIsCollapsed(false)}
-            isNewChat={isNewChat}
-            onNewChat={handleNewChat}
-            onSearchClick={() => setIsSearchOpen(true)}
-          />
-        ) : (
-          <Sidebar {...sidebarProps} />
-        )}
+        {/* Sidebar (only when open) */}
+        {sidebarOpen && <Sidebar {...sidebarProps} />}
 
+        {/* Floating buttons: always rendered so the RIGHT bar is permanent */}
+        <FloatingButtons
+          sidebarOpen={sidebarOpen}
+          onToggle={() => setIsCollapsed((prev) => !prev)}
+          isNewChat={isNewChat}
+          onNewChat={handleNewChat}
+          onSearchClick={() => setIsSearchOpen(true)}
+        />
+
+        {/* Chat area */}
         <main className="flex-1">
           <ChatPanel {...chatPanelProps} />
         </main>
 
+        {/* Modals / dialogs */}
         <SearchDialog
           open={isSearchOpen}
           onOpenChange={setIsSearchOpen}

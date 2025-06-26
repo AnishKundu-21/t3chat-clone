@@ -77,15 +77,19 @@ export function Sidebar({
 
   return (
     <>
-      {/* Overlay for click-outside close on mobile */}
+      {/* click-outside overlay on phones */}
       <div className="fixed inset-0 z-30 bg-black/0 sm:hidden" onClick={onToggle} />
 
-      {/* Frosted sidebar */}
+      {/* ───── Sidebar wrapper – same tinted-glass theme as floating bar ───── */}
       <div
         className={cn(
-          "glass bg-card/70 fixed inset-y-0 left-0 z-40 flex h-full flex-col border-r border-sidebar-border p-2 backdrop-blur-2xl shadow-xl transition-transform duration-300",
-          "w-64 sm:w-56 lg:w-72",
-          "lg:static",
+          "fixed inset-y-0 left-0 z-40 flex h-full flex-col transition-transform duration-300",
+          "w-64 sm:w-56 lg:w-72 lg:static",
+
+          /* look & feel */
+          "rounded-none border-r border-white/25 dark:border-white/30",
+          "bg-white/30 dark:bg-white/10 backdrop-blur-md backdrop-saturate-150 shadow-lg",
+          "p-2",
         )}
       >
         {/* Header */}
@@ -97,7 +101,7 @@ export function Sidebar({
             <h1 className="text-base font-bold sm:text-lg">T3 chat</h1>
           </div>
 
-          {/* Collapse button (tablet & up) */}
+          {/* collapse on ≥ sm */}
           <Button
             variant="ghost"
             size="icon"
@@ -107,11 +111,11 @@ export function Sidebar({
             <PanelLeftClose className="h-5 w-5" />
           </Button>
 
-          {/* Theme toggle (mobile only) */}
+          {/* theme toggle on xs */}
           <Button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             variant="ghost"
             size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             className="sm:hidden"
           >
             {mounted && (theme === "dark" ? <Sun /> : <Moon />)}
@@ -156,7 +160,7 @@ export function Sidebar({
                 {chat.title || "New Chat"}
               </Button>
 
-              {/* Delete button – only on laptop / desktop (≥ lg) */}
+              {/* delete only on ≥ lg */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -208,7 +212,8 @@ export function Sidebar({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this chat?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the conversation and all its messages. You can’t undo this.
+              This will permanently remove the conversation and all its messages. You can’t undo
+              this.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
