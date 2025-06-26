@@ -24,12 +24,15 @@ export function ChatPanel({
 }: ChatPanelProps) {
   const isEmpty = chat.messages.length <= 1
 
+  /* shared horizontal padding map */
+  const padX =
+    "px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16" // phone · tablet · laptop · desktop
+
   return (
-    /* divider only on laptop / desktop */
     <div className="relative flex h-full max-h-screen flex-col bg-background lg:border-l lg:border-border">
       {/* ───────── EMPTY STATE ───────── */}
       {isEmpty ? (
-        <div className="flex h-full flex-col items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className={`flex h-full flex-col items-center justify-center ${padX} py-6`}>
           <div className="mx-auto w-full max-w-2xl text-center">
             <h1 className="mb-8 text-2xl font-medium sm:text-3xl">
               How can I help you, Anish?
@@ -54,22 +57,22 @@ export function ChatPanel({
             </div>
           </div>
 
-          {/* sticky input */}
-          <div className="sticky bottom-0 left-0 w-full">
+          {/* sticky input w/ same horizontal padding */}
+          <div className={`sticky bottom-0 left-0 w-full ${padX} pb-4`}>
             <ChatInput input={input} setInput={setInput} onSend={onSend} />
           </div>
         </div>
       ) : (
         /* ───────── CHAT HISTORY ───────── */
         <>
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12">
+          <div className={`flex-1 overflow-y-auto ${padX} py-6`}>
             {chat.messages.map((m, i) => (
               <ChatMessage key={i} role={m.role} content={m.content} />
             ))}
           </div>
 
-          {/* sticky input */}
-          <div className="sticky bottom-0 left-0 w-full">
+          {/* sticky input w/ matching padding */}
+          <div className={`sticky bottom-0 left-0 w-full ${padX} pb-4`}>
             <ChatInput input={input} setInput={setInput} onSend={onSend} />
           </div>
         </>
