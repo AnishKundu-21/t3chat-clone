@@ -12,10 +12,8 @@ async function getOwnedChat(chatId: string, userId: string) {
 /* ─────────────────────────────────────────────────────── */
 /* GET  /api/chat/[id]  – unchanged                       */
 /* ─────────────────────────────────────────────────────── */
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
@@ -32,10 +30,8 @@ export async function GET(
 /* ─────────────────────────────────────────────────────── */
 /* POST /api/chat/[id]  – Append message + auto-title      */
 /* ─────────────────────────────────────────────────────── */
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
@@ -75,10 +71,8 @@ export async function POST(
 /* ─────────────────────────────────────────────────────── */
 /* DELETE /api/chat/[id] – optional, unchanged             */
 /* ─────────────────────────────────────────────────────── */
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
 
