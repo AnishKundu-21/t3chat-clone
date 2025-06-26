@@ -1,212 +1,145 @@
-### T3 Chat Clone
+# T3 Chat Clone
 
-Pixel-perfect chat application rebuilt with the T3 Stack philosophy (Next.js 14 App Router + TypeScript + Tailwind + Prisma + Next-Auth + shadcn/ui).
-
----
-
-### Tech Stack
-
-- **Framework:** Next.js 14 (App Router)
-- **Styling:** Tailwind CSS / shadcn/ui
-- **Auth:** Next-Auth v5 (beta) — Credentials
-- **Database:** MongoDB Atlas
-- **ORM:** Prisma 6
-- **State / Fetching:** SWR
-- **Icons:** lucide-react
-- **Notifications:** Sonner (toast library)
+Pixel-perfect chat application rebuilt the “T3 Stack” way: **Next.js 15 App Router + TypeScript + Tailwind + Prisma + Next-Auth + shadcn/ui**.
 
 ---
 
-### What's Implemented
+## Tech Stack
 
-**1. Authentication**
-- Email / password signup (`/api/register`).
-- Secure hashing with **bcrypt**.
-- Login / logout handled by Next-Auth credentials provider.
-- Session context wrapped with a **SessionProvider** in `Providers.tsx`.
-- UI: `AuthDialog` (Shadcn dialog + tabs).
-
-**2. Database Schema**
-- Standard Next-Auth models (`User`, `Account`, …).
-- **Chat** & **ChatMessage** collections with relations & indexes.
-- **UserPreference** model for storing user settings as JSON.
-- Automatic chat title set from first user message.
-
-**3. API Routes**
-- `GET /api/chat` – list user's chats.
-- `POST /api/chat` – create new chat with welcome message.
-- `GET /api/chat/[id]` – full thread.
-- `POST /api/chat/[id]` – append message (auto-title).
-- `DELETE /api/chat/[id]` – remove chat & all messages.
-- `GET/POST /api/preferences` – save/load user customization settings.
-
-**4. Client Hooks**
-- `useChats` (SWR) – cached chat list.
-- `useChat` (SWR) – single thread with optimistic `sendMessage`.
-
-**5. UI Components**
-- **Sidebar** with dynamic session info, search, new-chat, hover-delete icon + confirm dialog.
-- **ChatPanel** for messages & input.
-- **FloatingButtons** for collapsed sidebar.
-- **SearchDialog** to jump between threads.
-- **Settings Layout** with sticky header & tab navigation.
-- **ThemeToggle** component for dark/light mode switching.
-- Dark-mode ready with theme persistence.
-
-**6. Settings & Preferences**
-- **Account Page** – user profile, usage stats, pro plan benefits, danger zone.
-- **Customization Page** – comprehensive user preference management:
-  - Personal info (name, job, traits, bio)
-  - Visual options toggles (boring theme, hide PII, disable breaks, stats)
-  - Font selection (main text and code fonts with live preview)
-  - Auto-load preferences on page mount
-  - Toast notifications for save/load actions
-  - Database persistence with MongoDB
-
-**7. TypeScript Hygiene**
-- All components typed, `ref`-safe buttons (`forwardRef` fix).
-- Runtime / compile-time issues resolved (`title` never null, `updatedAt` always number).
-- Proper session handling with user ID access in server components.
+| Layer         | Choice                                                                             |
+| ------------- | ---------------------------------------------------------------------------------- |
+| Framework     | **Next.js 15** (App Router, RSC, Turbopack)                                        |
+| Styling / UI  | Tailwind CSS · **shadcn/ui** · Radix Primitives                                    |
+| Auth          | **Next-Auth v5 beta** &nbsp;•  Credentials + Google OAuth                          |
+| Database      | MongoDB Atlas                                                                      |
+| ORM           | Prisma 6                                                                           |
+| Fetch / State | SWR                                                                                |
+| Icons         | lucide-react                                                                       |
+| Toasts        | sonner                                                                             |
 
 ---
 
-### Core Requirements
+## What’s Implemented ✅
 
-- [ ] **Chat with Various LLMs**  
-  Support for multiple language models/providers.
-- [x] **Authentication & Sync**  
-  User authentication (NextAuth) with chat history planning.
-- [x] **Browser Friendly**  
-  App is fully browser-based.
-- [x] **Easy to Try**  
-  App runs easily on `localhost:3000`—demo possible.
+### 1 Authentication
+- **Email / Password** sign-up (`/api/register`) hashed with _bcrypt_  
+- **Google OAuth** (linking to existing e-mail automatically)  
+- Login/logout/session via Next-Auth; custom full-page `/login` & `/signup`  
+- Middleware guard redirects unauthenticated users to `/login`
 
----
+### 2 Database Schema
+- Next-Auth core models (`User`, `Account`, `Session`, `VerificationToken`)  
+- **Chat** and **ChatMessage** collections with indexes  
+- **UserPreference** document for theme & profile settings
 
-### Bonus Features
+### 3 API Routes
+| Method & Path               | Purpose                                      |
+| --------------------------- | -------------------------------------------- |
+| `GET  /api/chat`            | List user’s chats                            |
+| `POST /api/chat`            | Create new chat (auto welcome message)       |
+| `GET  /api/chat/[id]`       | Fetch single thread                          |
+| `POST /api/chat/[id]`       | Append message (auto-title first message)    |
+| `DELETE /api/chat/[id]`     | Remove chat & all messages                   |
+| `GET/POST /api/preferences` | Save / load user preferences                 |
+| `POST /api/register`        | Email + password account creation            |
 
-- [ ] **Attachment Support**  
-  Upload images and PDFs.
-- [ ] **Image Generation Support**  
-  Integrate AI-powered image generation.
-- [ ] **Syntax Highlighting**  
-  Code block formatting in chat.
-- [ ] **Resumable Streams**  
-  Continue message generation after refresh.
-- [ ] **Chat Branching**  
-  Allow users to create alternative conversation paths.
-- [ ] **Chat Sharing**  
-  Share conversations with a link.
-- [ ] **Web Search**  
-  Real-time search integration.
-- [ ] **Bring Your Own Key**  
-  Let users provide their own API keys.
-- [ ] **Mobile App**  
-  Ship PWA or mobile app version.
-- [ ] **Anything Else**  
-  Open to creative features or ideas!
+### 4 Client Hooks
+- `useChats` – SWR cached chat list
+- `useChat`  – single thread with optimistic send
 
----
+### 5 UI Components
+- **Sidebar** with search, new-chat, avatar, Google/cred sign-in link  
+- **ChatPanel** with frosted-glass action bar (theme toggle, customisation)  
+- **FloatingButtons** frosted stack when sidebar is collapsed  
+- **SearchDialog**, **Settings** layout with tabs & sticky header  
+- **ThemeToggle** (dark / light) with persisted choice
 
-### Completed So Far ✔️
+### 6 Settings & Preferences
+- **Account** – profile, usage, danger-zone  
+- **Customisation**  
+  - Personal details (name, job, traits, about)  
+  - Visual toggles (boring theme, hide PII, disable breaks, stats)  
+  - Pink/Magenta theme tokens + live preview  
+  - Toast feedback on save/load (Sonner)
 
-- **Authentication**  
-  Email/password signup and login (NextAuth credentials).
-- **Session Provider**  
-  Session context with provider for client and server.
-- **Settings & Preferences**  
-  - Account and Customization pages
-  - Visual toggles (stateful, saving and loading from DB)
-  - Font selection with live preview
-  - Toast notifications for feedback
-- **API**  
-  - User preferences endpoint
-  - Basic chat endpoints scaffolded
-- **TypeScript, UI, and Structure**  
-  - Typed components, shadcn/ui for design
-  - Modular file and folder structure
-  - Dark mode ready
+### 7 TypeScript Hygiene
+- Fully typed components, `forwardRef`-safe shadcn buttons  
+- Prisma types generated post-install  
+- Runtime checks for nullables eliminated
 
 ---
 
-### Roadmap / Next Steps
+## Core Requirements Progress
 
-- **LLM Model Integration:**  
-  Add support for multiple AI chat model backends.
-- **Full Chat History Sync:**  
-  Full chat CRUD, message threading, history per user.
-- **Bonus Features:**  
-  Gradually implement attachment upload, image generation, chat branching/sharing, syntax highlighting.
-- **Resumable Streams:**  
-  Enable chat continuation and message persistence after reload.
-- **Polished UI/UX:**  
-  Accessibility, mobile responsiveness, and more advanced settings.
-- **Deploy and Demo:**  
-  Make public demo easy to access and test.
+- [ ] **Chat with multiple LLMs**  
+- [x] **Auth & Sync** (email + Google, session, DB persistence)  
+- [x] **Browser Friendly** (all client-side; App Router)  
+- [x] **Easy to Try** (`npm run dev` works out of the box)
 
 ---
 
-### Local Development
+## Roadmap
 
-**1. Clone the repository (replace ``)**
+1. Integrate real LLM back-ends (OpenAI / Groq / etc.)  
+2. Full chat history CRUD & sharing  
+3. Attachments, image generation, syntax highlighting  
+4. Resumable streams / progressive rendering  
+5. Mobile PWA polish & accessibility pass
+
+---
+
+## Local Development
+
 ```
+# 1 Clone
 git clone https://github.com//t3chat-clone.git
 cd t3chat-clone
-```
 
-**2. Install dependencies**
-```
-npm install
-```
+# 2 Install deps
+npm install        # or pnpm / yarn
 
-**3. Create and configure your environment file**
-```
+# 3 Environment
 cp .env.example .env.local
-```
-Then, open `.env.local` and fill in your `DATABASE_URL` and `AUTH_SECRET`.
+#  ├─ DATABASE_URL          = your MongoDB URI
+#  ├─ AUTH_SECRET           = random string
+#  ├─ GOOGLE_CLIENT_ID      = from Google Cloud
+#  └─ GOOGLE_CLIENT_SECRET  = from Google Cloud
 
-**4. Push the Prisma schema to MongoDB**
-```
+# 4 Prisma → Mongo
 npx prisma db push
-```
+npx prisma generate   # (postinstall runs this too)
 
-**5. Generate the Prisma client**
-```
-npx prisma generate
-```
-
-**6. Run the development server**
-```
+# 5 Run
 npm run dev
+# open http://localhost:3000
 ```
-
-**7. Open your browser**
-Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
 
 ---
 
-### Project Structure
+## Project Structure
 
 ```
 src/
-├── app/
-│   ├── api/          # API routes (auth, chat, preferences)
-│   ├── settings/     # Settings pages with nested layouts
-│   └── globals.css   # Global styles
-├── components/
-│   ├── ui/           # shadcn/ui components
-│   ├── settings/     # Settings-specific components
-│   └── chat/         # Chat-related components
-├── lib/
-│   ├── auth.ts       # NextAuth configuration
-│   ├── prisma.ts     # Prisma client singleton
-│   └── utils.ts      # Utility functions
-└── prisma/
-    └── schema.prisma # Database schema
+├─ app/
+│  ├─ (auth)/            # /login /signup layout & pages
+│  ├─ api/               # Next.js route handlers
+│  ├─ settings/          # /settings with nested tabs
+│  └─ globals.css        # Tailwind layers + theme tokens
+├─ components/
+│  ├─ ui/                # shadcn/ui primitives
+│  ├─ chat/              # Chat UI composites
+│  └─ settings/          # Settings-page widgets
+├─ hooks/                # SWR hooks (useChat, useChats)
+├─ lib/
+│  ├─ prisma.ts          # Prisma client singleton
+│  ├─ utils.ts           # cn(), formatting helpers
+│  └─ auth.ts            # Next-Auth helpers
+└─ prisma/
+   └─ schema.prisma      # MongoDB models
 ```
 
 ---
 
-### License
+## License
 
 MIT
