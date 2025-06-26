@@ -25,11 +25,11 @@ export function ChatPanel({
   const isEmpty = chat.messages.length <= 1
 
   return (
-    /* border only on laptop / desktop */
+    /* divider only on laptop / desktop */
     <div className="relative flex h-full max-h-screen flex-col bg-background lg:border-l lg:border-border">
       {/* ───────── EMPTY STATE ───────── */}
       {isEmpty ? (
-        <div className="flex h-full flex-col items-center justify-center px-4 sm:px-6 lg:px-0">
+        <div className="flex h-full flex-col items-center justify-center px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="mx-auto w-full max-w-2xl text-center">
             <h1 className="mb-8 text-2xl font-medium sm:text-3xl">
               How can I help you, Anish?
@@ -62,7 +62,7 @@ export function ChatPanel({
       ) : (
         /* ───────── CHAT HISTORY ───────── */
         <>
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-0">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-12">
             {chat.messages.map((m, i) => (
               <ChatMessage key={i} role={m.role} content={m.content} />
             ))}

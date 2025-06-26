@@ -77,10 +77,10 @@ export function Sidebar({
 
   return (
     <>
-      {/* ───── Overlay to close sidebar on XS screens ───── */}
+      {/* Overlay for click-outside close on mobile */}
       <div className="fixed inset-0 z-30 bg-black/0 sm:hidden" onClick={onToggle} />
 
-      {/* ───── Frosted Sidebar ───── */}
+      {/* Frosted sidebar */}
       <div
         className={cn(
           "glass bg-card/70 fixed inset-y-0 left-0 z-40 flex h-full flex-col border-r border-sidebar-border p-2 backdrop-blur-2xl shadow-xl transition-transform duration-300",
@@ -97,7 +97,7 @@ export function Sidebar({
             <h1 className="text-base font-bold sm:text-lg">T3 chat</h1>
           </div>
 
-          {/* Collapse button – hidden on mobile, visible ≥ sm */}
+          {/* Collapse button (tablet & up) */}
           <Button
             variant="ghost"
             size="icon"
@@ -107,7 +107,7 @@ export function Sidebar({
             <PanelLeftClose className="h-5 w-5" />
           </Button>
 
-          {/* Theme toggle replaces collapse button on mobile */}
+          {/* Theme toggle (mobile only) */}
           <Button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             variant="ghost"
@@ -120,7 +120,7 @@ export function Sidebar({
 
         <Separator className="my-2" />
 
-        {/* New Chat + Search */}
+        {/* New + search */}
         <div className="flex flex-col gap-2">
           <Button onClick={onNewChat} className="w-full">
             <Plus className="mr-2 h-4 w-4" />
@@ -139,7 +139,9 @@ export function Sidebar({
 
         {/* Chat list */}
         <nav className="mt-4 flex-1 space-y-1 overflow-y-auto px-2">
-          {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+          {isLoading && (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          )}
 
           {filtered.map((chat) => (
             <div key={chat.id} className="group flex items-center gap-1 rounded-md">
@@ -153,10 +155,12 @@ export function Sidebar({
               >
                 {chat.title || "New Chat"}
               </Button>
+
+              {/* Delete button – only on laptop / desktop (≥ lg) */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="opacity-0 transition-opacity group-hover:opacity-100"
+                className="hidden lg:inline-flex opacity-0 transition-opacity group-hover:opacity-100"
                 onClick={() => confirmDelete(chat.id)}
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -198,7 +202,7 @@ export function Sidebar({
         </div>
       </div>
 
-      {/* Confirm delete dialog */}
+      {/* Confirm-delete dialog */}
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
