@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Message } from "@/types"; // Import our new central type
+import { Message } from "ai/react";
 
 // UI Components
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +15,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 
-// Define the props for this component, using the imported Message type
+// The props now directly use the `Message` type from the Vercel AI SDK
 interface ChatMessageProps extends Pick<Message, "role" | "content"> {}
 
 export function ChatMessage({ role, content }: ChatMessageProps) {
@@ -58,7 +57,7 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
         </div>
 
         {/* Hover Actions for Assistant Messages */}
-        {isAssistant && (
+        {isAssistant && content && (
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               onClick={handleCopy}

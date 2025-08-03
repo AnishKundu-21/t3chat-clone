@@ -1,41 +1,56 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
+import type { Message } from "ai/react";
 
-import { ChatSession } from "@/types"
-import { ChatMessage } from "@/components/ChatMessage"
-import { ChatInput } from "@/components/ChatInput"
-import { Button } from "@/components/ui/button"
+import { ChatMessage } from "@/components/ChatMessage";
+import { ChatInput } from "@/components/ChatInput";
+import { Button } from "@/components/ui/button";
 
-import { BookOpen, Code, Compass, Sparkles } from "lucide-react"
+import { BookOpen, Code, Compass, Sparkles } from "lucide-react";
+import { MODELS } from "@/app/page"; // Import the models constant
 
 interface ChatPanelProps {
-  chat: ChatSession
-  input: string
-  setInput: (v: string) => void
-  onSend: () => void
+  messages: Message[];
+  input: string;
+  handleInputChange: (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>
+  ) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  isLoading: boolean;
+  userName: string;
+  currentModel: string;
+  setCurrentModel: (modelId: string) => void;
 }
 
 export function ChatPanel({
-  chat,
+  messages,
   input,
-  setInput,
-  onSend,
+  handleInputChange,
+  handleSubmit,
+  isLoading,
+  userName,
+  currentModel,
+  setCurrentModel,
 }: ChatPanelProps) {
-  const isEmpty = chat.messages.length <= 1
+  // The initial welcome message from the assistant doesn't count as a "real" message
+  const isEmpty = messages.length <= 1;
 
   /* shared horizontal padding map */
-  const padX =
-    "px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16" // phone · tablet · laptop · desktop
+  const padX = "px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"; // phone · tablet · laptop · desktop
 
   return (
     <div className="relative flex h-full max-h-screen flex-col bg-background lg:border-l lg:border-border">
       {/* ───────── EMPTY STATE ───────── */}
-      {isEmpty ? (
-        <div className={`flex h-full flex-col items-center justify-center ${padX} py-6`}>
+      {isEmpty && !isLoading ? (
+        <div
+          className={`flex h-full flex-col items-center justify-center ${padX} py-6`}
+        >
           <div className="mx-auto w-full max-w-2xl text-center">
             <h1 className="mb-8 text-2xl font-medium sm:text-3xl">
-              How can I help you, Anish?
+              How can I help you, {userName}?
             </h1>
 
             <div className="mb-8 flex flex-wrap justify-center gap-2">
@@ -56,27 +71,30 @@ export function ChatPanel({
               <button className="hover:underline">Are black holes real?</button>
             </div>
           </div>
-
-          {/* sticky input w/ same horizontal padding */}
-          <div className={`sticky bottom-0 left-0 w-full ${padX} pb-4`}>
-            <ChatInput input={input} setInput={setInput} onSend={onSend} />
-          </div>
         </div>
       ) : (
         /* ───────── CHAT HISTORY ───────── */
-        <>
-          <div className={`flex-1 overflow-y-auto ${padX} py-6`}>
-            {chat.messages.map((m, i) => (
-              <ChatMessage key={i} role={m.role} content={m.content} />
+        <div className={`flex-1 overflow-y-auto ${padX} py-6`}>
+          {messages
+            .filter((m) => m.role !== "system") // Don't render system messages
+            .map((m, i) => (
+              <ChatMessage key={m.id || i} role={m.role} content={m.content} />
             ))}
-          </div>
-
-          {/* sticky input w/ matching padding */}
-          <div className={`sticky bottom-0 left-0 w-full ${padX} pb-4`}>
-            <ChatInput input={input} setInput={setInput} onSend={onSend} />
-          </div>
-        </>
+        </div>
       )}
+
+      {/* sticky input w/ matching padding */}
+      <div className={`sticky bottom-0 left-0 w-full ${padX} pb-4`}>
+        <ChatInput
+          input={input}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          models={MODELS}
+          currentModel={currentModel}
+          setCurrentModel={setCurrentModel}
+        />
+      </div>
     </div>
-  )
+  );
 }
