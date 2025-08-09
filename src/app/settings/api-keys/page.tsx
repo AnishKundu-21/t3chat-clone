@@ -2,120 +2,135 @@
 
 import * as React from "react";
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Badge} from "@/components/ui/badge";
-import {Separator} from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
-interface ApiKeyInputProps {
-    title: string;
-    description: string;
-    models: string[];
-    placeholder: string;
-    link: string;
-    linkText: string;
+function usePreferences() {
+  const [loading, setLoading] = React.useState(true);
+  const [prefs, setPrefs] = React.useState<any>({});
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/preferences");
+        if (res.ok) {
+          const json = await res.json();
+          if (!cancelled) setPrefs(json);
+        } else if (res.status !== 404) {
+          throw new Error(await res.text());
+        }
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? "Failed to load preferences");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function save(next: any) {
+    const res = await fetch("/api/preferences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(next),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    setPrefs((p: any) => ({ ...p, ...next }));
+  }
+
+  return { loading, prefs, save, error };
 }
 
-const ApiKeyInput: React.FC<ApiKeyInputProps> = ({
-                                                     title,
-                                                     description,
-                                                     models,
-                                                     placeholder,
-                                                     link,
-                                                     linkText,
-                                                 }) => (
+function OpenRouterKey() {
+  const { loading, prefs, save } = usePreferences();
+  const [value, setValue] = React.useState("");
+  const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!loading) setValue(prefs?.openrouterApiKey ?? "");
+  }, [loading, prefs]);
+
+  async function onSave() {
+    setSaving(true);
+    try {
+      await save({ openrouterApiKey: value.trim() });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
     <div>
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-            <span className="text-2xl">🔑</span> {title}
-        </h3>
-        <p className="text-sm text-muted-foreground mt-1">{description}</p>
-        <div className="flex flex-wrap gap-1 mt-2">
-            {models.map((model) => (
-                <Badge key={model} variant="outline">
-                    {model}
-                </Badge>
-            ))}
+      <h3 className="text-lg font-semibold flex items-center gap-2">
+        <span className="text-2xl">🔑</span> OpenRouter API Key
+      </h3>
+      <p className="text-sm text-muted-foreground mt-1">
+        Used for models via OpenRouter. Your key is stored securely in your
+        account preferences and used only for your requests.
+      </p>
+      <div className="mt-4">
+        <Input
+          type="password"
+          placeholder="sk-or-v1-..."
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          disabled={loading}
+        />
+        <div className="flex justify-between items-center mt-2">
+          <a
+            href="https://openrouter.ai/keys"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground hover:text-primary underline"
+          >
+            Get your API key from OpenRouter
+          </a>
+          <Button size="sm" onClick={onSave} disabled={loading || saving}>
+            {saving ? "Saving..." : "Save"}
+          </Button>
         </div>
-        <div className="mt-4">
-            <Input type="password" placeholder={placeholder}/>
-            <div className="flex justify-between items-center mt-2">
-                <a
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-primary underline"
-                >
-                    {linkText}
-                </a>
-                <Button size="sm">Save</Button>
-            </div>
-        </div>
+      </div>
     </div>
-);
+  );
+}
 
 export default function ApiKeysPage() {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>API Keys</CardTitle>
-                <CardDescription>
-                    Bring your own API keys for select models. Messages sent using your API keys will not count towards
-                    your monthly limits.
-                    <br/>
-                    <span className="font-semibold">Note:</span> For optional API key models, you can choose Priority
-                    (always use your API key first) or Fallback (use your credits first, then your API key).
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-8">
-                <ApiKeyInput
-                    title="Anthropic API Key"
-                    description="Used for the following models:"
-                    models={[
-                        "Claude 3.5 Sonnet",
-                        "Claude 3.7 Sonnet",
-                        "Claude 3.7 Sonnet (Reasoning)",
-                        "Claude 4 Opus",
-                        "Claude 4 Sonnet",
-                        "Claude 4 Sonnet (Reasoning)",
-                    ]}
-                    placeholder="sk-ant-..."
-                    link="https://console.anthropic.com"
-                    linkText="Get your API key from Anthropic's Console"
-                />
-                <Separator/>
-                <ApiKeyInput
-                    title="OpenAI API Key"
-                    description="Used for the following models:"
-                    models={["GPT 4.0", "o3", "o3 Pro"]}
-                    placeholder="sk-..."
-                    link="https://platform.openai.com"
-                    linkText="Get your API key from OpenAI's Dashboard"
-                />
-                <Separator/>
-                <ApiKeyInput
-                    title="Google API Key"
-                    description="Used for the following models:"
-                    models={[
-                        "Gemini 2.0 Flash",
-                        "Gemini 2.5 Flash Lite",
-                        "Gemini 2.5 Flash",
-                        "Gemini 2.5 Flash (Thinking)",
-                        "Gemini 2.5 Flash Lite",
-                        "Gemini 2.5 Flash-Lite (Thinking)",
-                        "Gemini 2.5 Pro",
-                    ]}
-                    placeholder="AIza..."
-                    link="https://console.cloud.google.com"
-                    linkText="Get your API key from Google Cloud Console"
-                />
-            </CardContent>
-        </Card>
-    );
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>API Keys</CardTitle>
+        <CardDescription>
+          Bring your own API keys for select models. Messages sent using your
+          API keys will not count towards your monthly limits.
+          <br />
+          <span className="font-semibold">Note:</span> For optional API key
+          models, you can choose Priority (always use your API key first) or
+          Fallback (use your credits first, then your API key).
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        <OpenRouterKey />
+        <Separator />
+        <div>
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <span className="text-2xl">🔑</span> Other Providers
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Coming soon: save keys for Anthropic, OpenAI, Google, and more.
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

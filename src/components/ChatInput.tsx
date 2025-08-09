@@ -18,6 +18,7 @@ interface ModelOption {
 }
 
 interface ChatInputProps {
+  chatId: string | null;
   input: string;
   handleInputChange: (
     e:
@@ -27,11 +28,12 @@ interface ChatInputProps {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
   models: ModelOption[];
-  currentModel: string;
+  currentModel: string | null;
   setCurrentModel: (modelId: string) => void;
 }
 
 export function ChatInput({
+  chatId,
   input,
   handleInputChange,
   handleSubmit,
@@ -40,8 +42,24 @@ export function ChatInput({
   currentModel,
   setCurrentModel,
 }: ChatInputProps) {
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const hasModels = models && models.length > 0;
+  const selectedLabel = React.useMemo(() => {
+    const fromList = models.find((m) => m.id === currentModel)?.name;
+    if (fromList) return fromList;
+    // Fallback to per-chat localStorage to avoid placeholder flash on reload
+    try {
+      const keyPrefix = chatId ? `chat:${chatId}:` : "chat:global:";
+      const storedLabel = window.localStorage.getItem(
+        `${keyPrefix}lastUsedModelLabel`
+      );
+      if (storedLabel) return storedLabel;
+    } catch {}
+    return undefined;
+  }, [models, currentModel, chatId]);
   return (
     <form
+      ref={formRef}
       onSubmit={handleSubmit}
       className="mx-auto w-full max-w-3xl px-4 py-4"
     >
@@ -55,7 +73,37 @@ export function ChatInput({
           maxRows={8}
           value={input}
           onChange={handleInputChange}
-          placeholder="Type your message here…"
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !e.ctrlKey &&
+              !e.altKey &&
+              !e.metaKey &&
+              // avoid sending during IME composition
+              !(e as unknown as { nativeEvent?: { isComposing?: boolean } })
+                .nativeEvent?.isComposing
+            ) {
+              // Only send if there's content and not loading
+              if (input.trim() && !isLoading) {
+                e.preventDefault();
+                // Submit the form programmatically
+                try {
+                  formRef.current?.requestSubmit();
+                } catch {
+                  // Fallback: create a synthetic submit
+                  formRef.current?.dispatchEvent(
+                    new Event("submit", { cancelable: true, bubbles: true })
+                  );
+                }
+              }
+            }
+          }}
+          placeholder={
+            hasModels
+              ? "Type your message here…"
+              : "Add models in Settings > Models to start chatting"
+          }
           className="w-full resize-none bg-transparent p-2 pr-20 text-base
                      placeholder:text-muted-foreground focus:outline-none"
         />
@@ -78,9 +126,30 @@ export function ChatInput({
           {/* left-hand utility buttons */}
           <div className="flex gap-1">
             {/* Model Selector */}
-            <Select value={currentModel} onValueChange={setCurrentModel}>
+            <Select
+              value={
+                currentModel ??
+                (typeof window !== "undefined"
+                  ? window.localStorage.getItem(
+                      `${
+                        chatId ? `chat:${chatId}:` : "chat:global:"
+                      }lastUsedModel`
+                    ) ?? undefined
+                  : undefined)
+              }
+              onValueChange={setCurrentModel}
+              disabled={!hasModels}
+            >
               <SelectTrigger className="h-8 w-fit gap-1 rounded-md text-xs">
-                <SelectValue placeholder="Select model" />
+                {selectedLabel ? (
+                  <span className="truncate">{selectedLabel}</span>
+                ) : (
+                  <SelectValue
+                    placeholder={
+                      hasModels ? "Select model" : "No models selected"
+                    }
+                  />
+                )}
               </SelectTrigger>
               <SelectContent>
                 {models.map((model) => (

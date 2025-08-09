@@ -8,9 +8,9 @@ import { ChatInput } from "@/components/ChatInput";
 import { Button } from "@/components/ui/button";
 
 import { BookOpen, Code, Compass, Sparkles } from "lucide-react";
-import { MODELS } from "@/app/page"; // Import the models constant
 
 interface ChatPanelProps {
+  chatId: string | null;
   messages: Message[];
   input: string;
   handleInputChange: (
@@ -21,22 +21,25 @@ interface ChatPanelProps {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
   userName: string;
-  currentModel: string;
+  models: Array<{ id: string; name: string }>;
+  currentModel: string | null;
   setCurrentModel: (modelId: string) => void;
 }
 
 export function ChatPanel({
+  chatId,
   messages,
   input,
   handleInputChange,
   handleSubmit,
   isLoading,
   userName,
+  models,
   currentModel,
   setCurrentModel,
 }: ChatPanelProps) {
-  // The initial welcome message from the assistant doesn't count as a "real" message
-  const isEmpty = messages.length <= 1;
+  // Consider empty only when there are zero messages
+  const isEmpty = messages.length === 0;
 
   /* shared horizontal padding map */
   const padX = "px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16"; // phone · tablet · laptop · desktop
@@ -86,11 +89,12 @@ export function ChatPanel({
       {/* sticky input w/ matching padding */}
       <div className={`sticky bottom-0 left-0 w-full ${padX} pb-4`}>
         <ChatInput
+          chatId={chatId}
           input={input}
           handleInputChange={handleInputChange}
           handleSubmit={handleSubmit}
           isLoading={isLoading}
-          models={MODELS}
+          models={models}
           currentModel={currentModel}
           setCurrentModel={setCurrentModel}
         />
