@@ -8,7 +8,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 ## Tech Stack
 
 | Layer         | Choice                                                   |
-|---------------|----------------------------------------------------------|
+| ------------- | -------------------------------------------------------- |
 | Framework     | **Next.js 15** (App Router + Turbopack)                  |
 | Styling / UI  | Tailwind CSS · shadcn/ui · Radix primitives              |
 | Auth          | **Next-Auth v5 (beta)** – Credentials **+ Google OAuth** |
@@ -23,18 +23,21 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 ## What’s Implemented ✔️
 
 1 Authentication
+
 - Credentials sign-up via [`/api/register`](src/app/api/register/route.ts) with bcrypt hashing
 - Google OAuth with automatic email linking
-- Full-page [`/login`](src/app/(auth)/login/page.tsx) and [`/signup`](src/app/(auth)/signup/page.tsx)
+- Full-page [`/login`](<src/app/(auth)/login/page.tsx>) and [`/signup`](<src/app/(auth)/signup/page.tsx>)
 - Session context via NextAuth `SessionProvider`
 - Middleware guard redirects unauthenticated users to `/login`
 
 2 Database Schema
+
 - NextAuth core models: `User`, `Account`, `Session`, `VerificationToken`
 - Application models: `Chat`, `ChatMessage` with indexes, and `UserPreference` for settings
 - Backed by MongoDB Atlas via Prisma (see [`prisma/schema.prisma`](prisma/schema.prisma))
 
 3 API Routes
+
 - Chat CRUD and retrieval:
   - `GET  /api/chat` — list user chats
   - `POST /api/chat` — create a new chat (auto-welcome)
@@ -47,6 +50,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
   - `POST /api/register` — credentials registration
 
 4 AI Streaming (OpenRouter)
+
 - Implemented streaming route to generate assistant replies token-by-token via OpenRouter
 - Endpoint: [`/api/chat/stream`](src/app/api/chat/stream/route.ts)
 - Uses `openai-edge` + `ai` helpers (`OpenAIStream`, `StreamingTextResponse`)
@@ -54,10 +58,12 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 - Default model: `google/gemma-2-9b-it:free` (configurable via request body)
 
 5 Client Hooks
+
 - [`useChats`](src/hooks/useChats.ts) — SWR-cached chat list
 - [`useChat`](src/hooks/useChat.ts) — single thread with optimistic send, revalidation, and chat list invalidation
 
 6 UI Components
+
 - [`Sidebar`](src/components/Sidebar.tsx) with search, new chat, avatar, sign-in/out
 - [`ChatPanel`](src/components/ChatPanel.tsx) with frosted-glass action bar (theme toggle, customise)
 - [`ChatMessage`](src/components/ChatMessage.tsx) for rendering turns
@@ -67,6 +73,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 - shadcn/ui primitives under [`src/components/ui`](src/components/ui)
 
 7 Settings & Preferences
+
 - Account and Customisation pages:
   - Personal details (name, job, traits, bio)
   - Visual toggles (boring theme, hide PII, disable breaks, stats)
@@ -74,6 +81,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
   - Toast notifications on save/load
 
 8 TypeScript Hygiene
+
 - Fully typed components and hooks
 - Prisma types generated post-install
 - Safe `forwardRef` patterns for shadcn components
@@ -117,7 +125,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 
 ```
 # 1 Clone
-git clone https://github.com//t3chat-clone.git
+git clone https://github.com/AnishKundu-21/t3chat-clone.git
 cd t3chat-clone
 ```
 
@@ -127,8 +135,8 @@ npm install        # or pnpm / yarn
 ```
 
 ```
-# 3 Environment
-cp .env.example .env.local
+# 3 Environment (Windows PowerShell)
+Copy-Item .env.example .env.local
 #   DATABASE_URL          = your Mongo URI
 #   AUTH_SECRET           = random string
 #   GOOGLE_CLIENT_ID      = OAuth ID
@@ -145,6 +153,18 @@ npx prisma generate
 npm run dev
 #  http://localhost:3000
 ```
+
+---
+
+## Maintenance & Fixes
+
+- Unified Prisma usage via `src/lib/prisma.ts` to avoid multiple clients in dev.
+- Standardized password hashing to `bcryptjs` across API routes to prevent native build issues on Windows.
+- Resolved duplicate `SearchDialog` component name casing; kept `src/components/SearchDialog.tsx` and updated props to accept chat list items.
+- Removed duplicate `postcss.config.mjs` in favor of `postcss.config.js`.
+- Added `.env.example` with required variables.
+
+If you previously had casing conflicts on case-insensitive filesystems (Windows), pull latest and delete stray `src/components/search-dialog.tsx`.
 
 ---
 

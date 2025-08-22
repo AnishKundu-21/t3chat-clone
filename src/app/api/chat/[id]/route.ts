@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-
-const prisma = new PrismaClient();
 
 /* ── helper ───────────────────────────────────────────── */
 async function getOwnedChat(chatId: string, userId: string) {
@@ -12,7 +10,10 @@ async function getOwnedChat(chatId: string, userId: string) {
 /* ─────────────────────────────────────────────────────── */
 /* GET  /api/chat/[id]  – unchanged                       */
 /* ─────────────────────────────────────────────────────── */
-export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+export async function GET(
+  _req: Request,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
@@ -30,7 +31,10 @@ export async function GET(_req: Request, props: { params: Promise<{ id: string }
 /* ─────────────────────────────────────────────────────── */
 /* POST /api/chat/[id]  – Append message + auto-title      */
 /* ─────────────────────────────────────────────────────── */
-export async function POST(req: Request, props: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: Request,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });
@@ -54,8 +58,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   });
 
   /* 2. maybe set a title the first time the USER speaks */
-  const shouldSetTitle =
-    !chat.title && role === "user"; // still unnamed & user message
+  const shouldSetTitle = !chat.title && role === "user"; // still unnamed & user message
 
   await prisma.chat.update({
     where: { id: chat.id },
@@ -71,7 +74,10 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 /* ─────────────────────────────────────────────────────── */
 /* DELETE /api/chat/[id] – optional, unchanged             */
 /* ─────────────────────────────────────────────────────── */
-export async function DELETE(_req: Request, props: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  _req: Request,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const user = await getCurrentUser();
   if (!user) return new NextResponse("Unauthorized", { status: 401 });

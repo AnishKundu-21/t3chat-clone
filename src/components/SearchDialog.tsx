@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChatSession } from "@/types"; // Import our central type
+import type { ChatListItem } from "@/hooks/useChats";
 
 // UI Components
 import {
@@ -18,7 +18,7 @@ import { Search } from "lucide-react";
 interface SearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  chats: ChatSession[];
+  chats: Array<Pick<ChatListItem, "id" | "title" | "updatedAt">>;
   onSelectChat: (chatId: string) => void;
 }
 
@@ -34,7 +34,7 @@ export function SearchDialog({
   // It filters the chats prop based on its internal search term state
   const filteredChats = searchTerm
     ? chats.filter((chat) =>
-        (chat.title || "New Chat")
+        (chat.title ?? "New Chat")
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
       )

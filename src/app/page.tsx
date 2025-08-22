@@ -572,9 +572,7 @@ export default function HomePage() {
   const effectiveMessages = loggedIn ? messages : guestMessages;
   const isNewChat = effectiveMessages.length <= 1;
 
-  // The SearchDialog expects a `messages` property which `ChatListItem` doesn't have.
-  // We can cast to `any` for now as a temporary fix. The correct fix is to update SearchDialog props.
-  const searchDialogChats = remoteChats as any;
+  const searchDialogChats = remoteChats;
 
   return (
     <TooltipProvider>
