@@ -124,7 +124,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 
 ```
 # 1 Clone
-git clone https://github.com/AnishKundu-21/t3chat-clone.git
+git clone https://github.com/your-username/t3chat-clone.git
 cd t3chat-clone
 ```
 
@@ -136,10 +136,20 @@ npm install        # or pnpm / yarn
 ```
 # 3 Environment (Windows PowerShell)
 Copy-Item .env.example .env.local
-#   DATABASE_URL          = your Mongo URI
-#   AUTH_SECRET           = random string
-#   GOOGLE_CLIENT_ID      = OAuth ID
-#   GOOGLE_CLIENT_SECRET  = OAuth secret
+# Copy to `.env.local` for local development
+# Database (MongoDB connection string)
+DATABASE_URL=
+
+# NextAuth
+AUTH_SECRET=
+NEXTAUTH_URL=
+
+# Google OAuth
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# OpenRouter API Key
+OPENROUTER_API_KEY=
 ```
 
 ```
