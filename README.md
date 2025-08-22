@@ -54,8 +54,7 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 - Implemented streaming route to generate assistant replies token-by-token via OpenRouter
 - Endpoint: [`/api/chat/stream`](src/app/api/chat/stream/route.ts)
 - Uses `openai-edge` + `ai` helpers (`OpenAIStream`, `StreamingTextResponse`)
-- Auth required via `getCurrentUser`; model selectable per request
-- Default model: `google/gemma-2-9b-it:free` (configurable via request body)
+- Auth required via `getCurrentUser`; model is user-selected (Settings → Models) and passed per request
 
 5 Client Hooks
 
@@ -74,11 +73,11 @@ Pixel-perfect chat application rebuilt the **T3-Stack** way
 
 7 Settings & Preferences
 
-- Account and Customisation pages:
-  - Personal details (name, job, traits, bio)
-  - Visual toggles (boring theme, hide PII, disable breaks, stats)
-  - Live font preview & pastel-pink theme tokens
-  - Toast notifications on save/load
+- Settings pages:
+  - Customization: personal details (name, job, traits, bio)
+  - API Keys: store your OpenRouter API key
+  - Models: fetch catalog from OpenRouter and choose which models appear in the chat selector
+  - Toast notifications on save
 
 8 TypeScript Hygiene
 
@@ -160,11 +159,11 @@ npm run dev
 
 - Unified Prisma usage via `src/lib/prisma.ts` to avoid multiple clients in dev.
 - Standardized password hashing to `bcryptjs` across API routes to prevent native build issues on Windows.
-- Resolved duplicate `SearchDialog` component name casing; kept `src/components/SearchDialog.tsx` and updated props to accept chat list items.
-- Removed duplicate `postcss.config.mjs` in favor of `postcss.config.js`.
+- Resolved `SearchDialog` casing; `src/components/SearchDialog.tsx` is canonical and the lowercase file re-exports it. Props updated to accept chat list items.
+- Harmonized PostCSS config to standard Tailwind + Autoprefixer.
 - Added `.env.example` with required variables.
 
-If you previously had casing conflicts on case-insensitive filesystems (Windows), pull latest and delete stray `src/components/search-dialog.tsx`.
+If you previously had casing conflicts on case-insensitive filesystems (Windows), pull latest; the lowercase `search-dialog.tsx` now re-exports the canonical component.
 
 ---
 
